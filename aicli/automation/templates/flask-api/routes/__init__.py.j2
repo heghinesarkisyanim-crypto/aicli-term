@@ -1,0 +1,18 @@
+from flask import Blueprint, jsonify
+
+bp = Blueprint("api", __name__)
+
+_items: list[dict] = []
+
+
+@bp.route("/items", methods=["GET"])
+def list_items():
+    return jsonify(_items)
+
+
+@bp.route("/items/<int:item_id>", methods=["GET"])
+def get_item(item_id: int):
+    for item in _items:
+        if item["id"] == item_id:
+            return jsonify(item)
+    return jsonify({"error": "Not found"}), 404
