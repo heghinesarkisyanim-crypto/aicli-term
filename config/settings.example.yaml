@@ -1,0 +1,24 @@
+llm:
+  provider: "anthropic"        # openai | anthropic | ollama
+  model: "claude-haiku-4-5-20251001"
+  timeout: 15
+  max_retries: 3
+
+security:
+  confirm_dangerous: true
+  dry_run_default: false
+  blocked_paths:
+    - "/etc"
+    - "/boot"
+    - "/sys"
+    - "/proc"
+    - "/dev"
+
+session:
+  history_size: 100
+  context_window: 5
+  history_file: "~/.aicli/history.json"
+
+ui:
+  language: "en"
+  color_theme: "dark"
