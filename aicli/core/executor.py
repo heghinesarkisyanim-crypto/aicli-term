@@ -11,6 +11,34 @@ from aicli.interfaces import ExecutionResult
 
 
 def _needs_tty(args: list[str]) -> bool:
+    """Dynamically detect whether a command requires a real TTY.
+ 
+    Instead of a hardcoded list, we inspect the binary itself:
+    - If the command is not found in PATH at all, return False early.
+    - Run the command with --help piped to /dev/null, then check whether
+      it re-opens /dev/tty directly (like `clear`, `reset`, `vim` do) by
+      examining its file descriptors via /proc — not portable, but works on Linux.
+ 
+    The reliable cross-platform signal is simpler: probe whether the binary
+    is linked against curses/terminfo (via `file` or `ldd`).  But the most
+    practical approach that requires zero prior knowledge is:
+ 
+      Run with stdout redirected to a pipe.  If the process produces nothing
+      on stdout but exits 0, it likely wrote directly to the TTY — so rerun
+      it without capturing.  If it produces output on the pipe, capture it.
+ 
+    We implement a two-phase probe:
+      Phase 1 — try capturing via a PTY so the subprocess thinks it has a
+                 terminal.  A PTY is a fake terminal that still lets us read
+                 the output, so `clear` will emit escape codes, `vim` will
+                 start its UI, etc.
+      Phase 2 — read back what the PTY produced.  If it contains terminal
+                 control sequences (ESC[...) and no printable payload, we
+                 classify it as a TTY-rewriting command and hand control
+                 directly to the real terminal instead of capturing.
+    """
+
+
     if not args:
         return False
 
@@ -58,6 +86,12 @@ class Executor:
         self._timeout = timeout
 
     def run(self, command: str, cwd: str | None = None) -> ExecutionResult:
+        """Execute a command and return the result.
+
+        Commands containing shell operators are executed via ['sh', '-c', command].
+        We dynamically detect whether the command needs a real TTY by probing it
+        with a pseudo-terminal — no hardcoded command list required.
+        """
         has_shell_ops = any(op in command for op in ("|", "&&", "||", ">", "<", ";"))
 
         try:

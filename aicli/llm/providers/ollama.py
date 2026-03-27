@@ -20,8 +20,12 @@ class OllamaProvider(BaseLLMProvider):
         response = ollama.chat(
             model=self.model,
             messages=all_messages,
-            options={"num_predict": 512},
-        )
+            options={
+            	"num_predict": 512,
+            	"temperature": 0,
+				"timeout": self.timeout 
+        	}
+		)
         return response["message"]["content"]
 
     def validate_api_key(self) -> bool:

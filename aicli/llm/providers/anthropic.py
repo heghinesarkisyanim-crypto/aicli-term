@@ -13,7 +13,7 @@ class AnthropicProvider(BaseLLMProvider):
     def __init__(self, model: str, timeout: int = 15) -> None:
         self.model = model
         self.timeout = timeout
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        api_key = os.environ.get("LLM_API_KEY", "")
         self._client = anthropic.Anthropic(api_key=api_key)
 
     def complete(self, system: str, messages: list[dict]) -> str:
@@ -27,5 +27,5 @@ class AnthropicProvider(BaseLLMProvider):
         return response.content[0].text
 
     def validate_api_key(self) -> bool:
-        key = os.environ.get("ANTHROPIC_API_KEY", "")
-        return bool(key and key != "your_anthropic_key_here")
+        key = os.environ.get("LLM_API_KEY", "")
+        return bool(key and key != "your_LLM_API_KEY_here")

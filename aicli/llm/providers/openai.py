@@ -13,7 +13,7 @@ class OpenAIProvider(BaseLLMProvider):
     def __init__(self, model: str = "gpt-4o", timeout: int = 15) -> None:
         self.model = model
         self.timeout = timeout
-        api_key = os.environ.get("OPENAI_API_KEY", "")
+        api_key = os.environ.get("LLM_API_KEY", "")
         self._client = OpenAI(api_key=api_key)
 
     def complete(self, system: str, messages: list[dict]) -> str:
@@ -27,5 +27,5 @@ class OpenAIProvider(BaseLLMProvider):
         return response.choices[0].message.content or ""
 
     def validate_api_key(self) -> bool:
-        key = os.environ.get("OPENAI_API_KEY", "")
-        return bool(key and key != "your_openai_key_here")
+        key = os.environ.get("LLM_API_KEY", "")
+        return bool(key and key != "your_LLM_API_KEY_here")
